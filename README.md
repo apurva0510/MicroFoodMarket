@@ -173,7 +173,7 @@ curl -X POST http://127.0.0.1:9001/edit_product \
 ### Search products
 Search by **name**:
 ```bash
-curl "http://127.0.0.1:9002/search?product_name=butter" \
+curl "http://127.0.0.1:9002/search?product_name=eggs" \
   -H "Authorization: Bearer $JWT"
 ```
 
