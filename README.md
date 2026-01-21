@@ -95,7 +95,7 @@ docker compose down
 - `GET /clear`
   - Clears that service database and resets state
 
-## Example Requests (based on the provided test cases)
+## Example Requests
 
 > These examples mirror the test harness behavior:
 > - Requests use `127.0.0.1` (not `localhost`)
