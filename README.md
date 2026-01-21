@@ -136,7 +136,7 @@ curl -X POST http://127.0.0.1:9000/create_user \
 
 ### Login and capture a JWT
 ```bash
-# Login as the employee user (jmm)
+# Login as the employee user (jdo)
 curl -X POST http://127.0.0.1:9000/login \
   -d "username=jdo" \
   -d "password=Examplepassword1"
