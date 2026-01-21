@@ -113,7 +113,7 @@ curl http://127.0.0.1:9004/clear
 
 ### Create users (employee and non-employee)
 ```bash
-# Employee user: jmm
+# Employee user: jdo
 curl -X POST http://127.0.0.1:9000/create_user \
   -d "first_name=john" \
   -d "last_name=doe" \
