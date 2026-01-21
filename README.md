@@ -13,6 +13,7 @@ Services: **users**, **products**, **search**, **orders**, **logs**.
 - Example Requests
 - Project Structure
 - Notes
+- License
 
 ## Overview
 This project implements a microservice architecture where each service owns its own SQLite database and exposes a small HTTP API. Services communicate over HTTP on a shared Docker network.
@@ -22,8 +23,8 @@ This project implements a microservice architecture where each service owns its 
 |---|---|---:|---|
 | User Management | `user` | 9000 | `user.db` |
 | Product Management | `products` | 9001 | `products.db` |
-| Product Search | `search` | 9002 | `search.db` (optional) |
-| Ordering | `orders` | 9003 | `ordering.db` (optional) |
+| Product Search | `search` | 9002 | - |
+| Ordering | `orders` | 9003 | - |
 | Logging | `logs` | 9004 | `logs.db` |
 
 ## Tech Stack
@@ -94,85 +95,154 @@ docker compose down
 - `GET /clear`
   - Clears that service database and resets state
 
-## Example Requests (cURL)
+## Example Requests (based on the provided test cases)
 
-> Replace `$JWT` with the token returned from `/login`.
+> These examples mirror the test harness behavior:
+> - Requests use `127.0.0.1` (not `localhost`)
+> - Auth is sent via the `Authorization` header as a JWT
+> - `/order` sends the `order` field as **form data** whose value is a JSON string
 
-### Create a user
+### Clear all services
 ```bash
-curl -X POST http://localhost:9000/create_user   -d "first_name=Jane"   -d "last_name=Doe"   -d "username=jdoe"   -d "email_address=jdoe@example.com"   -d "employee=true"   -d "password=pass123"   -d "salt=somesalt"
+curl http://127.0.0.1:9000/clear
+curl http://127.0.0.1:9001/clear
+curl http://127.0.0.1:9002/clear
+curl http://127.0.0.1:9003/clear
+curl http://127.0.0.1:9004/clear
 ```
 
-### Login
+### Create users (employee and non-employee)
 ```bash
-curl -X POST http://localhost:9000/login   -d "username=jdoe"   -d "password=pass123"
+# Employee user: jmm
+curl -X POST http://127.0.0.1:9000/create_user \
+  -d "first_name=john" \
+  -d "last_name=doe" \
+  -d "username=jdo" \
+  -d "email_address=jdo@example.com" \
+  -d "password=Examplepassword1" \
+  -d "employee=True" \
+  -d "salt=FE8x1gO+7z0B"
+
+# Non-employee user: griff
+curl -X POST http://127.0.0.1:9000/create_user \
+  -d "first_name=peter" \
+  -d "last_name=griffin" \
+  -d "username=griff" \
+  -d "email_address=griff@example.com" \
+  -d "password=Examplepassword2" \
+  -d "employee=False" \
+  -d "salt=xaxkRSzNPnP4"
 ```
 
-### Create a product (employee only)
+### Login and capture a JWT
 ```bash
-curl -X POST http://localhost:9001/create_product   -H "Authorization: Bearer $JWT"   -d "name=milk"   -d "price=3.99"   -d "category=dairy"
+# Login as the employee user (jmm)
+curl -X POST http://127.0.0.1:9000/login \
+  -d "username=jdo" \
+  -d "password=Examplepassword1"
+```
+
+Copy the `jwt` from the response and export it:
+```bash
+export JWT="<paste-jwt-here>"
+```
+
+### Create products (employee only)
+```bash
+curl -X POST http://127.0.0.1:9001/create_product \
+  -H "Authorization: Bearer $JWT" \
+  -d "name=eggs" \
+  -d "price=3.99" \
+  -d "category=dairy"
+
+curl -X POST http://127.0.0.1:9001/create_product \
+  -H "Authorization: Bearer $JWT" \
+  -d "name=cheese" \
+  -d "price=5.99" \
+  -d "category=dairy"
 ```
 
 ### Edit a product (employee only)
 ```bash
-curl -X POST http://localhost:9001/edit_product   -H "Authorization: Bearer $JWT"   -d "name=milk"   -d "new_price=4.25"
+curl -X POST http://127.0.0.1:9001/edit_product \
+  -H "Authorization: Bearer $JWT" \
+  -d "name=eggs" \
+  -d "new_price=3.98"
 ```
 
-### Search by category
+### Search products
+Search by **name**:
 ```bash
-curl "http://localhost:9002/search?category=dairy"   -H "Authorization: Bearer $JWT"
+curl "http://127.0.0.1:9002/search?product_name=butter" \
+  -H "Authorization: Bearer $JWT"
+```
+
+Search by **category**:
+```bash
+curl "http://127.0.0.1:9002/search?category=dairy" \
+  -H "Authorization: Bearer $JWT"
 ```
 
 ### Place an order
+> Test cases send the `order` parameter as form data whose value is a JSON string.
+
+Single-item order:
 ```bash
-curl -X POST http://localhost:9003/order   -H "Authorization: Bearer $JWT"   -H "Content-Type: application/json"   -d '{"order":[{"product":"milk","quantity":2}]}'
+curl -X POST http://127.0.0.1:9003/order \
+  -H "Authorization: Bearer $JWT" \
+  --data-urlencode 'order=[{"product":"cheese","quantity":1}]'
 ```
 
-### View logs for a product (authorized)
+Multi-quantity example:
 ```bash
-curl "http://localhost:9004/view_log?product=milk"   -H "Authorization: Bearer $JWT"
+curl -X POST http://127.0.0.1:9003/order \
+  -H "Authorization: Bearer $JWT" \
+  --data-urlencode 'order=[{"product":"cheese","quantity":3}]'
 ```
 
-### Clear all services
+### View logs (authorized)
+View logs for a **user**:
 ```bash
-curl http://localhost:9000/clear
-curl http://localhost:9001/clear
-curl http://localhost:9002/clear
-curl http://localhost:9003/clear
-curl http://localhost:9004/clear
+curl "http://127.0.0.1:9004/view_log?username=jdo" \
+  -H "Authorization: Bearer $JWT"
+```
+
+View logs for a **product**:
+```bash
+curl "http://127.0.0.1:9004/view_log?product=eggs" \
+  -H "Authorization: Bearer $JWT"
 ```
 
 ## Project Structure
 ```text
 .
 ├── compose.yaml
-├── Dockerfile.users
-├── Dockerfile.products
-├── Dockerfile.search
-├── Dockerfile.order
-├── Dockerfile.logs
-├── users/
+├── key.txt
+├── user/
 │   ├── app.py
-│   └── schema.sql
+│   ├── users.sql
+│   └── Dockerfile.users
 ├── products/
 │   ├── app.py
-│   └── schema.sql
+│   ├── products.sql
+│   └── Dockerfile.products
 ├── search/
 │   ├── app.py
-│   └── schema.sql
+│   └── Dockerfile.search
 ├── orders/
 │   ├── app.py
-│   └── schema.sql
+│   └── Dockerfile.order
 └── logs/
     ├── app.py
-    └── schema.sql
+    ├── logs.sql
+    └── Dockerfile.logs
 ```
 
 ## Notes
 - Use parameterized SQL queries to avoid SQL injection
 - JWT payload should only include the username
 - Each service owns its database and initializes tables on startup (and via `/clear`)
+- `key.txt` stores the JWT signing key used by the user service and other services for verification
 
 ## License
-Copyright (c) 2026 . All rights reserved.
-No permission is granted to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software without explicit written permission.
+Proprietary. All rights reserved. See `LICENSE`.
