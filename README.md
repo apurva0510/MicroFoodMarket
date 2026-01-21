@@ -142,7 +142,7 @@ curl http://localhost:9003/clear
 curl http://localhost:9004/clear
 ```
 
-## Project Structure (suggested)
+## Project Structure
 ```text
 .
 ├── compose.yaml
@@ -174,4 +174,5 @@ curl http://localhost:9004/clear
 - Each service owns its database and initializes tables on startup (and via `/clear`)
 
 ## License
-For coursework use. Add a license here if you plan to open source it.
+Copyright (c) 2026 . All rights reserved.
+No permission is granted to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software without explicit written permission.
