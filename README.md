@@ -47,6 +47,21 @@ This project implements a microservice architecture where each service owns its 
 ### Prerequisites
 - Docker
 - Docker Compose
+- [`uv`](https://docs.astral.sh/uv/) (for local development)
+
+### Local Python environment
+
+Install the locked Python dependencies:
+
+```bash
+uv sync
+```
+
+Run an individual service locally with uv, for example:
+
+```bash
+uv run flask --app user/app.py run --port 9000
+```
 
 ### Build and start
 From the repository root (where `compose.yaml` is located):
@@ -217,6 +232,8 @@ curl "http://127.0.0.1:9004/view_log?product=eggs" \
 ```text
 .
 ├── compose.yaml
+├── pyproject.toml
+├── uv.lock
 ├── key.txt
 ├── user/
 │   ├── app.py
