@@ -1,15 +1,17 @@
-FROM python:latest
+FROM python:3.12-slim
+
+COPY --from=ghcr.io/astral-sh/uv:0.12.0 /uv /uvx /bin/
 
 COPY user/app.py /app/
 COPY user/users.sql /app/
 COPY key.txt /app/
+COPY pyproject.toml uv.lock /app/
 
 WORKDIR /app
 
-RUN pip3 install flask
-RUN pip3 install requests
+RUN uv sync --locked --no-dev
 
 ENV FLASK_APP=app.py
+ENV PATH="/app/.venv/bin:$PATH"
 
 CMD ["flask", "run", "--host=0.0.0.0"]
-

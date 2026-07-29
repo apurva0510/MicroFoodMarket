@@ -9,32 +9,32 @@ services:
       - aggarw86
   products:
     build:
-      context: ./products
-      dockerfile: Dockerfile.products
+      context: .
+      dockerfile: products/Dockerfile.products
     ports:
       - "9001:5000"
     networks:
       - aggarw86
   search:
     build:
-      context: ./search
-      dockerfile: Dockerfile.search
+      context: .
+      dockerfile: search/Dockerfile.search
     ports:
       - "9002:5000"
     networks:
       - aggarw86
   orders:
     build:
-      context: ./orders
-      dockerfile: Dockerfile.order
+      context: .
+      dockerfile: orders/Dockerfile.order
     ports:
       - "9003:5000"
     networks:
       - aggarw86
   logs:
     build:
-      context: ./logs
-      dockerfile: Dockerfile.logs
+      context: .
+      dockerfile: logs/Dockerfile.logs
     ports:
       - "9004:5000"
     networks:
